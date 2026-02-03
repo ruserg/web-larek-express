@@ -16,7 +16,6 @@ router.get('/', getProducts);
 // POST /product - создать продукт (требует авторизации)
 router.post(
   '/',
-  auth,
   celebrate({
     body: Joi.object().keys({
       title: Joi.string().min(2).max(30).required(),
@@ -29,6 +28,7 @@ router.post(
       price: Joi.number().allow(null).optional(),
     }),
   }),
+  auth,
   createProduct,
 );
 

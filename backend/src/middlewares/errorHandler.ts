@@ -63,6 +63,9 @@ export const errorHandler = (
   } else if (err instanceof MongooseError.ValidationError) {
     statusCode = 400;
     message = err.message;
+  } else if (err instanceof MongooseError.CastError) {
+    statusCode = 400;
+    message = 'Некорректный формат данных';
   } else if (err.message && err.message.includes('E11000')) {
     statusCode = 409;
     message = 'Такой объект уже существует';
