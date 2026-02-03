@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { faker } from '@faker-js/faker';
+import { Error as MongooseError } from 'mongoose';
 import Product from '../models/product';
 import { BadRequestError } from '../middlewares/errorHandler';
 
@@ -14,16 +15,19 @@ const createOrder = async (req: Request, res: Response, next: NextFunction) => {
       items,
     } = req.body;
 
-    // Проверяем, что items является массивом и не пустой
-    if (!Array.isArray(items) || items.length === 0) {
-      return next(new BadRequestError('Массив товаров не может быть пустым'));
-    }
-
     // Проверяем, что все продукты существуют и имеют цену
     let products;
     try {
-      products = await Product.find({ _id: { $in: items } });
+      // Фильтруем пустые строки и невалидные ID
+      const validItems = items.filter((id: string) => id && typeof id === 'string' && id.length === 24);
+      if (validItems.length !== items.length) {
+        return next(new BadRequestError('Некорректный формат ID продукта'));
+      }
+      products = await Product.find({ _id: { $in: validItems } });
     } catch (dbErr) {
+      if (dbErr instanceof MongooseError.CastError) {
+        return next(new BadRequestError('Некорректный формат ID продукта'));
+      }
       return next(new BadRequestError('Ошибка при поиске продуктов'));
     }
 

@@ -9,6 +9,10 @@ import {
   UnauthorizedError,
 } from '../middlewares/errorHandler';
 
+interface MongoError extends Error {
+  code?: number;
+}
+
 export const login = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { email, password } = req.body;
@@ -71,11 +75,12 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
       },
     });
   } catch (err) {
-    if (err instanceof Error && err.message && err.message.includes('E11000')) {
-      return next(new ConflictError('Пользователь с таким email уже существует'));
-    }
     if (err instanceof MongooseError.ValidationError) {
       return next(new BadRequestError(err.message));
+    }
+    const mongoErr = err as MongoError;
+    if (mongoErr.code === 11000 || (mongoErr.message && mongoErr.message.includes('E11000'))) {
+      return next(new ConflictError('Пользователь с таким email уже существует'));
     }
     return next(err);
   }

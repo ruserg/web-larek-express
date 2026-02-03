@@ -6,6 +6,10 @@ import Product from '../models/product';
 import { BadRequestError, NotFoundError, ConflictError } from '../middlewares/errorHandler';
 import { moveFileFromTemp, PUBLIC_IMAGES_DIR } from '../utils/fileUtils';
 
+interface MongoError extends Error {
+  code?: number;
+}
+
 export const getProducts = async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const products = await Product.find({});
@@ -31,11 +35,12 @@ export const createProduct = async (req: Request, res: Response, next: NextFunct
     const product = await Product.create(productData);
     return res.status(201).json(product);
   } catch (err) {
-    if (err instanceof Error && err.message && err.message.includes('E11000')) {
-      return next(new ConflictError('Продукт с таким названием уже существует'));
-    }
     if (err instanceof MongooseError.ValidationError) {
       return next(new BadRequestError(err.message));
+    }
+    const mongoErr = err as MongoError;
+    if (mongoErr.code === 11000 || (mongoErr.message && mongoErr.message.includes('E11000'))) {
+      return next(new ConflictError('Продукт с таким названием уже существует'));
     }
     return next(err);
   }
@@ -77,11 +82,12 @@ export const updateProduct = async (req: Request, res: Response, next: NextFunct
 
     return res.json(product);
   } catch (err) {
-    if (err instanceof Error && err.message && err.message.includes('E11000')) {
-      return next(new ConflictError('Продукт с таким названием уже существует'));
-    }
     if (err instanceof MongooseError.ValidationError) {
       return next(new BadRequestError(err.message));
+    }
+    const mongoErr = err as MongoError;
+    if (mongoErr.code === 11000 || (mongoErr.message && mongoErr.message.includes('E11000'))) {
+      return next(new ConflictError('Продукт с таким названием уже существует'));
     }
     return next(err);
   }
