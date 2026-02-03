@@ -1,6 +1,7 @@
 /* eslint-disable max-classes-per-file */
 import { Request, Response, NextFunction } from 'express';
 import { Error as MongooseError } from 'mongoose';
+import { isCelebrateError } from 'celebrate';
 
 export class BadRequestError extends Error {
   statusCode: number;
@@ -55,6 +56,10 @@ export const errorHandler = (
     || err instanceof ConflictError || err instanceof UnauthorizedError) {
     statusCode = err.statusCode;
     message = err.message;
+  } else if (isCelebrateError(err)) {
+    statusCode = 400;
+    const details = err.details.get('body') || err.details.get('params') || err.details.get('query');
+    message = details ? details.message : 'Ошибка валидации данных';
   } else if (err instanceof MongooseError.ValidationError) {
     statusCode = 400;
     message = err.message;

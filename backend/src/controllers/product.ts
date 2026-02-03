@@ -9,7 +9,10 @@ import { moveFileFromTemp, PUBLIC_IMAGES_DIR } from '../utils/fileUtils';
 export const getProducts = async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const products = await Product.find({});
-    return res.json(products);
+    return res.json({
+      items: products,
+      total: products.length,
+    });
   } catch (err) {
     return next(err);
   }

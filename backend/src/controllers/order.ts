@@ -14,6 +14,11 @@ const createOrder = async (req: Request, res: Response, next: NextFunction) => {
       items,
     } = req.body;
 
+    // Проверяем, что items является массивом и не пустой
+    if (!Array.isArray(items) || items.length === 0) {
+      return next(new BadRequestError('Массив товаров не может быть пустым'));
+    }
+
     // Проверяем, что все продукты существуют и имеют цену
     const products = await Product.find({ _id: { $in: items } });
 
@@ -36,7 +41,7 @@ const createOrder = async (req: Request, res: Response, next: NextFunction) => {
     // Генерируем ID заказа
     const orderId = faker.string.uuid();
 
-    return res.status(201).json({
+    return res.status(200).json({
       id: orderId,
       total,
     });
