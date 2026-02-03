@@ -16,20 +16,7 @@ const createOrder = async (req: Request, res: Response, next: NextFunction) => {
     } = req.body;
 
     // Проверяем, что все продукты существуют и имеют цену
-    let products;
-    try {
-      // Фильтруем пустые строки и невалидные ID
-      const validItems = items.filter((id: string) => id && typeof id === 'string' && id.length === 24);
-      if (validItems.length !== items.length) {
-        return next(new BadRequestError('Некорректный формат ID продукта'));
-      }
-      products = await Product.find({ _id: { $in: validItems } });
-    } catch (dbErr) {
-      if (dbErr instanceof MongooseError.CastError) {
-        return next(new BadRequestError('Некорректный формат ID продукта'));
-      }
-      return next(new BadRequestError('Ошибка при поиске продуктов'));
-    }
+    const products = await Product.find({ _id: { $in: items } });
 
     if (products.length !== items.length) {
       return next(new BadRequestError('Один или несколько продуктов не найдены'));

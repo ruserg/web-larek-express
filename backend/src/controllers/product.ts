@@ -35,12 +35,12 @@ export const createProduct = async (req: Request, res: Response, next: NextFunct
     const product = await Product.create(productData);
     return res.status(201).json(product);
   } catch (err) {
-    if (err instanceof MongooseError.ValidationError) {
-      return next(new BadRequestError(err.message));
-    }
     const mongoErr = err as MongoError;
     if (mongoErr.code === 11000 || (mongoErr.message && mongoErr.message.includes('E11000'))) {
       return next(new ConflictError('Продукт с таким названием уже существует'));
+    }
+    if (err instanceof MongooseError.ValidationError) {
+      return next(new BadRequestError(err.message));
     }
     return next(err);
   }
@@ -82,12 +82,12 @@ export const updateProduct = async (req: Request, res: Response, next: NextFunct
 
     return res.json(product);
   } catch (err) {
-    if (err instanceof MongooseError.ValidationError) {
-      return next(new BadRequestError(err.message));
-    }
     const mongoErr = err as MongoError;
     if (mongoErr.code === 11000 || (mongoErr.message && mongoErr.message.includes('E11000'))) {
       return next(new ConflictError('Продукт с таким названием уже существует'));
+    }
+    if (err instanceof MongooseError.ValidationError) {
+      return next(new BadRequestError(err.message));
     }
     return next(err);
   }

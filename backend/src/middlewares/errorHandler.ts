@@ -76,17 +76,17 @@ export const errorHandler = (
     } else {
       message = details ? details.message : 'Ошибка валидации данных';
     }
-  } else if (err instanceof MongooseError.ValidationError) {
-    statusCode = 400;
-    message = err.message;
-  } else if (err instanceof MongooseError.CastError) {
-    statusCode = 400;
-    message = 'Некорректный формат данных';
   } else {
     const mongoErr = err as MongoError;
     if (mongoErr.code === 11000 || (mongoErr.message && mongoErr.message.includes('E11000'))) {
       statusCode = 409;
       message = 'Такой объект уже существует';
+    } else if (err instanceof MongooseError.ValidationError) {
+      statusCode = 400;
+      message = err.message;
+    } else if (err instanceof MongooseError.CastError) {
+      statusCode = 400;
+      message = 'Некорректный формат данных';
     }
   }
 
