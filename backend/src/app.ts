@@ -14,7 +14,7 @@ import uploadRoutes from './routes/upload';
 
 dotenv.config();
 
-const { PORT = 3000, DB_ADDRESS = 'mongodb://127.0.0.1:27017/weblarek' } = process.env;
+const { PORT = '3000', DB_ADDRESS = 'mongodb://127.0.0.1:27017/weblarek' } = process.env;
 
 const app = express();
 
@@ -55,6 +55,6 @@ app.use(errors());
 // Централизованная обработка ошибок
 app.use(errorHandler);
 
-app.listen(PORT, () => {
+app.listen(Number(PORT), '0.0.0.0', () => {
   console.log(`Сервер запущен на порту ${PORT}`);
 });
