@@ -49,6 +49,11 @@ export const errorHandler = (
   res: Response,
   _next: NextFunction,
 ) => {
+  // Проверяем, не был ли ответ уже отправлен
+  if (res.headersSent) {
+    return _next(err);
+  }
+
   let statusCode = 500;
   let message = 'На сервере произошла ошибка';
 
@@ -71,5 +76,5 @@ export const errorHandler = (
     message = 'Такой объект уже существует';
   }
 
-  res.status(statusCode).json({ message });
+  return res.status(statusCode).json({ message });
 };
