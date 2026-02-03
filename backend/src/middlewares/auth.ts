@@ -1,3 +1,4 @@
+/// <reference path="../types/express.d.ts" />
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import User from '../models/user';
@@ -7,7 +8,7 @@ interface JwtPayload {
   _id: string;
 }
 
-export const auth = async (req: Request, res: Response, next: NextFunction) => {
+const auth = async (req: Request, _res: Response, next: NextFunction) => {
   try {
     const { authorization } = req.headers;
 
@@ -31,8 +32,10 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
     }
 
     req.user = user;
-    next();
+    return next();
   } catch (err) {
-    next(err);
+    return next(err);
   }
 };
+
+export default auth;

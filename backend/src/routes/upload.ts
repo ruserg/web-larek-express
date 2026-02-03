@@ -2,7 +2,7 @@ import { Router, Request } from 'express';
 import multer from 'multer';
 import path from 'path';
 import { TEMP_DIR } from '../utils/fileUtils';
-import { auth } from '../middlewares/auth';
+import auth from '../middlewares/auth';
 import { BadRequestError } from '../middlewares/errorHandler';
 
 const router = Router();
@@ -21,7 +21,12 @@ const storage = multer.diskStorage({
 
 const allowedMimeTypes = ['image/png', 'image/jpg', 'image/jpeg', 'image/gif', 'image/svg+xml'];
 
-const fileFilter = (_req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+const fileFilter = (
+  _req: Request,
+  // eslint-disable-next-line no-undef
+  file: Express.Multer.File,
+  cb: multer.FileFilterCallback,
+) => {
   // Разрешаем только указанные типы изображений
   if (allowedMimeTypes.includes(file.mimetype)) {
     cb(null, true);
@@ -44,12 +49,12 @@ router.post('/', auth, upload.single('file'), (req, res, next) => {
       return next(new BadRequestError('Файл не был загружен'));
     }
 
-    res.json({
+    return res.json({
       fileName: req.file.filename,
       originalName: req.file.originalname,
     });
   } catch (err) {
-    next(err);
+    return next(err);
   }
 });
 

@@ -3,9 +3,16 @@ import { faker } from '@faker-js/faker';
 import Product from '../models/product';
 import { BadRequestError } from '../middlewares/errorHandler';
 
-export const createOrder = async (req: Request, res: Response, next: NextFunction) => {
+const createOrder = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { payment, email, phone, address, total, items } = req.body;
+    const {
+      payment: _payment,
+      email: _email,
+      phone: _phone,
+      address: _address,
+      total,
+      items,
+    } = req.body;
 
     // Проверяем, что все продукты существуют и имеют цену
     const products = await Product.find({ _id: { $in: items } });
@@ -29,11 +36,13 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
     // Генерируем ID заказа
     const orderId = faker.string.uuid();
 
-    res.status(201).json({
+    return res.status(201).json({
       id: orderId,
       total,
     });
   } catch (err) {
-    next(err);
+    return next(err);
   }
 };
+
+export default createOrder;

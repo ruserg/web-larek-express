@@ -12,6 +12,7 @@ const ensureDirectoriesExist = async () => {
     await fs.mkdir(TEMP_DIR, { recursive: true });
     await fs.mkdir(PUBLIC_IMAGES_DIR, { recursive: true });
   } catch (err) {
+    // eslint-disable-next-line no-console
     console.error('Ошибка при создании директорий:', err);
   }
 };
@@ -48,6 +49,7 @@ export const deleteTempFile = async (fileName: string): Promise<void> => {
     await fs.unlink(tempPath);
   } catch (err) {
     // Игнорируем ошибку, если файл не существует
+    // eslint-disable-next-line no-console
     console.error('Ошибка при удалении временного файла:', err);
   }
 };

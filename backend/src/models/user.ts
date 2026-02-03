@@ -27,10 +27,7 @@ const userSchema = new Schema<IUser>({
     required: true,
     unique: true,
     validate: {
-      validator: (v: string) => {
-        // eslint-disable-next-line
-        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
-      },
+      validator: (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v),
       message: 'Некорректный email',
     },
   },
@@ -53,21 +50,26 @@ const userSchema = new Schema<IUser>({
 });
 
 // Хеширование пароля перед сохранением
-userSchema.pre('save', async function (next) {
+userSchema.pre('save', async function preSave(next) {
   if (!this.isModified('password')) {
     return next();
   }
   this.password = await bcrypt.hash(this.password, 10);
-  next();
+  return next();
 });
 
 // Метод для сравнения пароля
-userSchema.methods.comparePassword = async function (candidatePassword: string): Promise<boolean> {
+userSchema.methods.comparePassword = async function comparePassword(
+  candidatePassword: string,
+): Promise<boolean> {
   return bcrypt.compare(candidatePassword, this.password);
 };
 
 // Метод для генерации токенов
-userSchema.methods.generateTokens = function (): { accessToken: string; refreshToken: string } {
+userSchema.methods.generateTokens = function generateTokens(): {
+    accessToken: string;
+    refreshToken: string;
+    } {
   const { JWT_SECRET = 'secret-key', AUTH_REFRESH_TOKEN_EXPIRY = '7d' } = process.env;
   const accessToken = jwt.sign({ _id: this._id.toString() }, JWT_SECRET, { expiresIn: '10m' });
   const refreshToken = jwt.sign(
@@ -81,6 +83,7 @@ userSchema.methods.generateTokens = function (): { accessToken: string; refreshT
   }
   this.tokens.push({ token: refreshToken });
   this.save().catch((err: Error) => {
+    // eslint-disable-next-line no-console
     console.error('Ошибка при сохранении токена:', err);
   });
 

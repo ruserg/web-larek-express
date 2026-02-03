@@ -1,7 +1,13 @@
 import { Router } from 'express';
 import { celebrate, Joi } from 'celebrate';
-import { login, register, refreshToken, logout, getCurrentUser } from '../controllers/auth';
-import { auth } from '../middlewares/auth';
+import {
+  login,
+  register,
+  refreshToken,
+  logout,
+  getCurrentUser,
+} from '../controllers/auth';
+import auth from '../middlewares/auth';
 
 const router = Router();
 

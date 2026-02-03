@@ -9,9 +9,9 @@ import { moveFileFromTemp, PUBLIC_IMAGES_DIR } from '../utils/fileUtils';
 export const getProducts = async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const products = await Product.find({});
-    res.json(products);
+    return res.json(products);
   } catch (err) {
-    next(err);
+    return next(err);
   }
 };
 
@@ -26,7 +26,7 @@ export const createProduct = async (req: Request, res: Response, next: NextFunct
     }
 
     const product = await Product.create(productData);
-    res.status(201).json(product);
+    return res.status(201).json(product);
   } catch (err) {
     if (err instanceof Error && err.message && err.message.includes('E11000')) {
       return next(new ConflictError('Продукт с таким названием уже существует'));
@@ -34,7 +34,7 @@ export const createProduct = async (req: Request, res: Response, next: NextFunct
     if (err instanceof MongooseError.ValidationError) {
       return next(new BadRequestError(err.message));
     }
-    next(err);
+    return next(err);
   }
 };
 
@@ -56,6 +56,7 @@ export const updateProduct = async (req: Request, res: Response, next: NextFunct
           await fs.unlink(oldImagePath);
         } catch (unlinkErr) {
           // Игнорируем ошибку, если файл не существует
+          // eslint-disable-next-line no-console
           console.error('Ошибка при удалении старого изображения:', unlinkErr);
         }
       }
@@ -71,7 +72,7 @@ export const updateProduct = async (req: Request, res: Response, next: NextFunct
       return next(new NotFoundError('Продукт не найден'));
     }
 
-    res.json(product);
+    return res.json(product);
   } catch (err) {
     if (err instanceof Error && err.message && err.message.includes('E11000')) {
       return next(new ConflictError('Продукт с таким названием уже существует'));
@@ -79,7 +80,7 @@ export const updateProduct = async (req: Request, res: Response, next: NextFunct
     if (err instanceof MongooseError.ValidationError) {
       return next(new BadRequestError(err.message));
     }
-    next(err);
+    return next(err);
   }
 };
 
@@ -100,12 +101,13 @@ export const deleteProduct = async (req: Request, res: Response, next: NextFunct
         await fs.unlink(imagePath);
       } catch (unlinkErr) {
         // Игнорируем ошибку, если файл не существует
+        // eslint-disable-next-line no-console
         console.error('Ошибка при удалении изображения:', unlinkErr);
       }
     }
 
-    res.json(product);
+    return res.json(product);
   } catch (err) {
-    next(err);
+    return next(err);
   }
 };

@@ -2,7 +2,12 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { Error as MongooseError } from 'mongoose';
 import User from '../models/user';
-import { BadRequestError, NotFoundError, ConflictError, UnauthorizedError } from '../middlewares/errorHandler';
+import {
+  BadRequestError,
+  NotFoundError,
+  ConflictError,
+  UnauthorizedError,
+} from '../middlewares/errorHandler';
 
 export const login = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -28,7 +33,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 дней
     });
 
-    res.json({
+    return res.json({
       accessToken,
       user: {
         _id: user._id,
@@ -37,7 +42,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
       },
     });
   } catch (err) {
-    next(err);
+    return next(err);
   }
 };
 
@@ -57,7 +62,7 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 дней
     });
 
-    res.status(201).json({
+    return res.status(201).json({
       accessToken,
       user: {
         _id: user._id,
@@ -72,7 +77,7 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
     if (err instanceof MongooseError.ValidationError) {
       return next(new BadRequestError(err.message));
     }
-    next(err);
+    return next(err);
   }
 };
 
@@ -118,9 +123,9 @@ export const refreshToken = async (req: Request, res: Response, next: NextFuncti
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 дней
     });
 
-    res.json({ accessToken });
+    return res.json({ accessToken });
   } catch (err) {
-    next(err);
+    return next(err);
   }
 };
 
@@ -156,25 +161,25 @@ export const logout = async (req: Request, res: Response, next: NextFunction) =>
       path: '/',
     });
 
-    res.json({ message: 'Выход выполнен успешно' });
+    return res.json({ message: 'Выход выполнен успешно' });
   } catch (err) {
-    next(err);
+    return next(err);
   }
 };
 
 export const getCurrentUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const user = req.user;
+    const { user } = req;
     if (!user) {
       return next(new UnauthorizedError('Пользователь не найден'));
     }
 
-    res.json({
+    return res.json({
       _id: user._id,
       name: user.name,
       email: user.email,
     });
   } catch (err) {
-    next(err);
+    return next(err);
   }
 };
