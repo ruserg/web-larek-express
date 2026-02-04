@@ -26,7 +26,7 @@ export const createProduct = async (req: Request, res: Response, next: NextFunct
   try {
     const { image, ...productData } = req.body;
 
-    // Если есть image: пробуем переместить из temp; если файла нет (например, в тестах) — используем как есть
+    // Если есть image: пробуем переместить из temp; иначе используем как есть (для тестов)
     if (image && image.fileName) {
       try {
         const movedImage = await moveFileFromTemp(image.fileName, image.originalName);

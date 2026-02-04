@@ -88,7 +88,10 @@ export const errorHandler = (
     });
   }
 
-  if (err instanceof BadRequestError || err instanceof NotFoundError || err instanceof UnauthorizedError) {
+  const isClientError = err instanceof BadRequestError
+    || err instanceof NotFoundError
+    || err instanceof UnauthorizedError;
+  if (isClientError) {
     return res.status(err.statusCode).json({
       message: err.message,
     });
@@ -106,7 +109,7 @@ export const errorHandler = (
     statusCode = 400;
     message = 'Некорректный формат данных';
   } else {
-    // Обработка ошибки дубликата уникального поля (проверяем message, так как code может быть не доступен)
+    // Ошибка дубликата уникального поля (E11000)
     const mongoErr = err as MongoError;
     if (mongoErr.code === 11000 || (mongoErr.message && mongoErr.message.includes('E11000'))) {
       statusCode = 409;
