@@ -58,9 +58,19 @@ export const errorHandler = (
     return _next(err);
   }
 
-  // Обработка ошибок celebrate (первым делом)
-  if (err instanceof CelebrateError) {
-    const errorBody = err.details.get('body') || err.details.get('params') || err.details.get('query');
+  // Ошибка парсинга JSON (невалидное тело запроса)
+  if (err instanceof SyntaxError && 'body' in err) {
+    return res.status(400).json({
+      message: 'Неверный формат JSON',
+    });
+  }
+
+  // Обработка ошибок celebrate (валидация Joi)
+  if (err instanceof CelebrateError || (err as Error).name === 'ValidationError') {
+    const celebrateErr = err as CelebrateError;
+    const errorBody = celebrateErr.details?.get?.('body')
+      || celebrateErr.details?.get?.('params')
+      || celebrateErr.details?.get?.('query');
     const details = errorBody?.details?.[0];
 
     return res.status(400).json({

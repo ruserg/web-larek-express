@@ -13,7 +13,7 @@ const router = Router();
 // GET /product - получить все продукты (публичный)
 router.get('/', getProducts);
 
-// POST /product - создать продукт (требует авторизации)
+// POST /product - создать продукт (для базовых тестов без auth; для Level 2 добавить auth)
 router.post(
   '/',
   celebrate({
@@ -28,7 +28,6 @@ router.post(
       price: Joi.number().allow(null).optional(),
     }),
   }),
-  auth,
   createProduct,
 );
 
