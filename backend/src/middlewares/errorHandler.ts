@@ -58,8 +58,11 @@ export const errorHandler = (
     return _next(err);
   }
 
-  // Ошибка парсинга JSON (невалидное тело запроса)
-  if (err instanceof SyntaxError && 'body' in err) {
+  // Ошибка парсинга JSON — только от body-parser (express.json())
+  const jsonErr = err as Error & { status?: number; type?: string };
+  const isBodyParserJsonError = err instanceof SyntaxError
+    && (jsonErr.type === 'entity.parse.failed' || jsonErr.status === 400);
+  if (isBodyParserJsonError) {
     return res.status(400).json({
       message: 'Неверный формат JSON',
     });

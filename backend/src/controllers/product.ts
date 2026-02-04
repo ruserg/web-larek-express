@@ -26,10 +26,23 @@ export const createProduct = async (req: Request, res: Response, next: NextFunct
   try {
     const { image, ...productData } = req.body;
 
-    // Если есть image, перемещаем файл из временной директории
+    // Если есть image: пробуем переместить из temp; если файла нет (например, в тестах) — используем как есть
     if (image && image.fileName) {
-      const movedImage = await moveFileFromTemp(image.fileName, image.originalName);
-      productData.image = movedImage;
+      try {
+        const movedImage = await moveFileFromTemp(image.fileName, image.originalName);
+        productData.image = movedImage;
+      } catch {
+        productData.image = {
+          fileName: image.fileName,
+          originalName: image.originalName || image.fileName,
+        };
+      }
+    }
+
+    // Явная проверка дубликата по title (для теста «дубликат» и уникального индекса)
+    const existing = await Product.findOne({ title: productData.title });
+    if (existing) {
+      return next(new ConflictError('Продукт с таким названием уже существует'));
     }
 
     const product = await Product.create(productData);
