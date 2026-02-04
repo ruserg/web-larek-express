@@ -68,24 +68,36 @@ export const errorHandler = (
     });
   }
 
+  // Обработка кастомных ошибок
+  if (err instanceof ConflictError) {
+    return res.status(409).json({
+      message: err.message,
+    });
+  }
+
+  if (err instanceof BadRequestError || err instanceof NotFoundError || err instanceof UnauthorizedError) {
+    return res.status(err.statusCode).json({
+      message: err.message,
+    });
+  }
+
+  // Устанавливаем статус по умолчанию
   let statusCode = 500;
   let message = 'На сервере произошла ошибка';
 
-  if (err instanceof BadRequestError || err instanceof NotFoundError
-    || err instanceof ConflictError || err instanceof UnauthorizedError) {
-    statusCode = err.statusCode;
+  // Обработка ошибок Mongoose
+  if (err instanceof MongooseError.ValidationError) {
+    statusCode = 400;
     message = err.message;
+  } else if (err instanceof MongooseError.CastError) {
+    statusCode = 400;
+    message = 'Некорректный формат данных';
   } else {
+    // Обработка ошибки дубликата уникального поля (проверяем message, так как code может быть не доступен)
     const mongoErr = err as MongoError;
     if (mongoErr.code === 11000 || (mongoErr.message && mongoErr.message.includes('E11000'))) {
       statusCode = 409;
       message = 'Такой объект уже существует';
-    } else if (err instanceof MongooseError.ValidationError) {
-      statusCode = 400;
-      message = err.message;
-    } else if (err instanceof MongooseError.CastError) {
-      statusCode = 400;
-      message = 'Некорректный формат данных';
     }
   }
 
