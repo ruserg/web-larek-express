@@ -1,7 +1,7 @@
 /* eslint-disable max-classes-per-file */
 import { Request, Response, NextFunction } from 'express';
 import { Error as MongooseError } from 'mongoose';
-import { isCelebrateError } from 'celebrate';
+import { CelebrateError } from 'celebrate';
 
 interface MongoError extends Error {
   code?: number;
@@ -48,7 +48,7 @@ export class UnauthorizedError extends Error {
 }
 
 export const errorHandler = (
-  err: Error | BadRequestError | NotFoundError | ConflictError | UnauthorizedError,
+  err: Error | BadRequestError | NotFoundError | ConflictError | UnauthorizedError | CelebrateError,
   _req: Request,
   res: Response,
   _next: NextFunction,
@@ -58,6 +58,16 @@ export const errorHandler = (
     return _next(err);
   }
 
+  // Обработка ошибок celebrate (первым делом)
+  if (err instanceof CelebrateError) {
+    const errorBody = err.details.get('body') || err.details.get('params') || err.details.get('query');
+    const details = errorBody?.details?.[0];
+
+    return res.status(400).json({
+      message: details?.message || 'Ошибка валидации данных',
+    });
+  }
+
   let statusCode = 500;
   let message = 'На сервере произошла ошибка';
 
@@ -65,17 +75,6 @@ export const errorHandler = (
     || err instanceof ConflictError || err instanceof UnauthorizedError) {
     statusCode = err.statusCode;
     message = err.message;
-  } else if (isCelebrateError(err)) {
-    statusCode = 400;
-    const bodyDetails = err.details.get('body');
-    const paramsDetails = err.details.get('params');
-    const queryDetails = err.details.get('query');
-    const details = bodyDetails || paramsDetails || queryDetails;
-    if (details && details.details && details.details.length > 0) {
-      message = details.details[0].message;
-    } else {
-      message = details ? details.message : 'Ошибка валидации данных';
-    }
   } else {
     const mongoErr = err as MongoError;
     if (mongoErr.code === 11000 || (mongoErr.message && mongoErr.message.includes('E11000'))) {

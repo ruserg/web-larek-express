@@ -4,7 +4,6 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import path from 'path';
 import dotenv from 'dotenv';
-import { errors } from 'celebrate';
 import { requestLogger, errorLogger } from './middlewares/logger';
 import { errorHandler } from './middlewares/errorHandler';
 import productRoutes from './routes/product';
@@ -48,9 +47,6 @@ app.use('/upload', uploadRoutes);
 
 // Логирование ошибок
 app.use(errorLogger);
-
-// Обработка ошибок валидации celebrate
-app.use(errors());
 
 // Централизованная обработка ошибок
 app.use(errorHandler);
