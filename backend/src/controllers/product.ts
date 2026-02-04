@@ -39,7 +39,7 @@ export const createProduct = async (req: Request, res: Response, next: NextFunct
       }
     }
 
-    // Явная проверка дубликата по title (для теста «дубликат» и уникального индекса)
+    // Явная проверка дубликата по title
     const existing = await Product.findOne({ title: productData.title });
     if (existing) {
       return next(new ConflictError('Продукт с таким названием уже существует'));
